@@ -1,0 +1,139 @@
+---
+title: "5 minutes map"
+format: gfm
+editor: visual
+---
+
+This is a tutorial on how to quickly plot data with geographical coordinates on a map. 
+## Packages
+```{r}
+#| message: false
+#| warning: false
+ 
+library(rnaturalearth)
+library(sf)
+library(dplyr)
+
+```
+
+## Base map
+Let’s create a ggplot object using the base map to display the data of interest. 
+```{r}
+
+uk_map_raw <- ne_countries(
+  country = "United Kingdom",
+  scale = "large", #small, medium or large
+  returnclass = "sf" #sf or sv
+)
+
+```
+
+
+```{r}
+library(ggplot2)
+
+uk_map <- ggplot() +
+  geom_sf(data = uk_map_raw, 
+          fill = "grey95", 
+          color = "grey40", 
+          linewidth = 0.3) +
+  coord_sf(
+    xlim = c(-8.8, 2.0),
+    ylim = c(49.5, 61.0),
+    expand = FALSE
+  ) +
+  theme_bw()
+
+uk_map
+```
+
+Adding a ggplot layer showing regional divisions. 
+```{r}
+library("maps")
+
+uk_regions <- ne_states(country = "United Kingdom", 
+                        returnclass = "sf")
+
+```
+
+```{r}
+
+uk_map_region <- ggplot() +
+  
+  geom_sf(data=uk_regions, 
+          fill = "#eeefefff", 
+          color = "white", 
+          linewidth = 0.3
+          )+ 
+  
+  geom_sf(data = uk_map_raw, 
+          fill = NA, 
+          color = "black", 
+          linewidth = 0.3) +
+  
+  coord_sf(
+    xlim = c(-8.8, 2.0),
+    ylim = c(49.5, 61.0),
+    expand = FALSE
+  )+
+  
+  theme_void()
+
+uk_map_region
+
+```
+
+## Plotting data
+
+importing the data to be plotted.
+```{r}
+
+data_ids <- read.csv("~/Desktop/5_minutes_map/data_map.csv")
+
+# checking the class of each column
+str(data_ids)
+
+```
+### Dotplot
+Plotting the data, with colours assigned according to the ‘sex’ column.
+```{r}
+
+uk_map_region +
+  geom_point(data = data_ids, 
+             aes(x=longitude, 
+                 y=latitude, 
+                 color=SEX
+                 )
+             )
+  
+  
+```
+
+### Heatmap
+```{r}
+
+data_ids_heatmap <- as.data.frame(table(data_ids$region))
+colnames(data_ids_heatmap) <- c("region", "cases")
+
+data_ids_heatmap <- uk_regions %>%
+  left_join(data_ids_heatmap, by = "region")
+
+```
+
+```{r}
+#| message: false
+#| warning: false
+
+uk_map_region +
+  geom_sf(
+    data = data_ids_heatmap,
+    aes(fill = cases),
+    color = NA,
+    linewidth = 0.3
+  )+
+  scale_fill_viridis_c(
+    name = "cases",
+    option = "magma"
+  )
+
+```
