@@ -5,7 +5,19 @@ editor: visual
 ---
 
 This is a tutorial on how to quickly plot data with geographical coordinates on a map. 
-## Packages
+
+## References
+
+*Drawing beautiful maps programmatically with R, sf and ggplot2:*
+
+https://r-spatial.org/r/2018/10/25/ggplot2-sf.html
+
+https://r-spatial.org/r/2018/10/25/ggplot2-sf-2.html
+
+https://r-spatial.org/r/2018/10/25/ggplot2-sf-3.html
+
+## Libraries
+
 ```{r}
 #| message: false
 #| warning: false
@@ -13,21 +25,24 @@ This is a tutorial on how to quickly plot data with geographical coordinates on 
 library(rnaturalearth)
 library(sf)
 library(dplyr)
+library(ggplot2)
 
 ```
 
 ## Base map
-Let’s create a ggplot object using the base map to display the data of interest. 
+
+Let’s create a ggplot object using the base map to display the data of interest.
+
 ```{r}
 
 uk_map_raw <- ne_countries(
-  country = "United Kingdom",
+  country = c("United Kingdom"),
+  #continent = "Africa",
   scale = "large", #small, medium or large
   returnclass = "sf" #sf or sv
 )
 
 ```
-
 
 ```{r}
 library(ggplot2)
@@ -36,9 +51,10 @@ uk_map <- ggplot() +
   geom_sf(data = uk_map_raw, 
           fill = "grey95", 
           color = "grey40", 
-          linewidth = 0.3) +
-  coord_sf(
-    xlim = c(-8.8, 2.0),
+          linewidth = 0.3
+          ) +
+  coord_sf( #remove/modify this layer to change the limits of the plot.
+    xlim = c(-8.8, 2.0), 
     ylim = c(49.5, 61.0),
     expand = FALSE
   ) +
@@ -47,7 +63,8 @@ uk_map <- ggplot() +
 uk_map
 ```
 
-Adding a ggplot layer showing regional divisions. 
+Adding a ggplot layer showing regional divisions.
+
 ```{r}
 library("maps")
 
@@ -86,6 +103,7 @@ uk_map_region
 ## Plotting data
 
 importing the data to be plotted.
+
 ```{r}
 
 data_ids <- read.csv("~/Desktop/5_minutes_map/data_map.csv")
@@ -94,8 +112,11 @@ data_ids <- read.csv("~/Desktop/5_minutes_map/data_map.csv")
 str(data_ids)
 
 ```
+
 ### Dotplot
+
 Plotting the data, with colours assigned according to the ‘sex’ column.
+
 ```{r}
 
 uk_map_region +
@@ -110,6 +131,7 @@ uk_map_region +
 ```
 
 ### Heatmap
+
 ```{r}
 
 data_ids_heatmap <- as.data.frame(table(data_ids$region))

@@ -1,35 +1,53 @@
 # 5 minutes map
 
 
-## Packages
+This is a tutorial on how to quickly plot data with geographical
+coordinates on a map.
+
+## References
+
+*Drawing beautiful maps programmatically with R, sf and ggplot2:*
+
+https://r-spatial.org/r/2018/10/25/ggplot2-sf.html
+
+https://r-spatial.org/r/2018/10/25/ggplot2-sf-2.html
+
+https://r-spatial.org/r/2018/10/25/ggplot2-sf-3.html
+
+## Libraries
 
 ``` r
 library(rnaturalearth)
 library(sf)
 library(dplyr)
+library(ggplot2)
 ```
 
 ## Base map
 
+Let’s create a ggplot object using the base map to display the data of
+interest.
+
 ``` r
 uk_map_raw <- ne_countries(
-  country = "United Kingdom",
-  scale = "large",
-  returnclass = "sf"
+  country = c("United Kingdom"),
+  #continent = "Africa",
+  scale = "large", #small, medium or large
+  returnclass = "sf" #sf or sv
 )
 ```
 
 ``` r
 library(ggplot2)
-```
 
-    Warning: package 'ggplot2' was built under R version 4.5.2
-
-``` r
 uk_map <- ggplot() +
-  geom_sf(data = uk_map_raw, fill = "grey95", color = "grey40", linewidth = 0.3) +
-  coord_sf(
-    xlim = c(-8.8, 2.0),
+  geom_sf(data = uk_map_raw, 
+          fill = "grey95", 
+          color = "grey40", 
+          linewidth = 0.3
+          ) +
+  coord_sf( #remove/modify this layer to change the limits of the plot.
+    xlim = c(-8.8, 2.0), 
     ylim = c(49.5, 61.0),
     expand = FALSE
   ) +
@@ -40,7 +58,7 @@ uk_map
 
 ![](5minutesmap_files/figure-commonmark/unnamed-chunk-3-1.png)
 
-Creating a map with region division.
+Adding a ggplot layer showing regional divisions.
 
 ``` r
 library("maps")
@@ -78,11 +96,12 @@ uk_map_region
 
 ## Plotting data
 
-### Dotplot
+importing the data to be plotted.
 
 ``` r
 data_ids <- read.csv("~/Desktop/5_minutes_map/data_map.csv")
 
+# checking the class of each column
 str(data_ids)
 ```
 
@@ -95,9 +114,18 @@ str(data_ids)
      $ AGE      : int  44 73 36 58 97 73 3 87 19 42 ...
      $ SEX      : chr  "F" "F" "M" "M" ...
 
+### Dotplot
+
+Plotting the data, with colours assigned according to the ‘sex’ column.
+
 ``` r
 uk_map_region +
-  geom_point(data = data_ids, aes(x=longitude, y=latitude, color=SEX))
+  geom_point(data = data_ids, 
+             aes(x=longitude, 
+                 y=latitude, 
+                 color=SEX
+                 )
+             )
 ```
 
 ![](5minutesmap_files/figure-commonmark/unnamed-chunk-7-1.png)
